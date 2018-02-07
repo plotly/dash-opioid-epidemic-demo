@@ -6,7 +6,6 @@ import dash_colorscales
 import pandas as pd
 import cufflinks as cf
 import numpy as np
-import feather
 
 app = dash.Dash(__name__)
 server = app.server
@@ -16,8 +15,6 @@ df_lat_lon['FIPS '] = df_lat_lon['FIPS '].apply(lambda x: str(x).zfill(5))
 
 df_full_data = pd.read_csv('age_adjusted_death_rate.csv')
 df_full_data['"County Code"'] = df_full_data['"County Code"'].apply(lambda x: str(x).zfill(5))
-
-#df_full_data = feather.read_dataframe('df.feather')
 
 YEARS = [2003, 2004, 2005, 2006, 2007, \
 		2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015]
