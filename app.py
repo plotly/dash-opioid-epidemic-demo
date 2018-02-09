@@ -84,7 +84,16 @@ app.layout = html.Div(children=[
 					colorscale=DEFAULT_COLORSCALE,
 					nSwatches=16,
 					fixSwatches=True
-				),
+				)
+			], style={'display':'inline-block'}),
+
+			html.Div([
+				dcc.Checklist(
+				    options=[{'label': 'Hide legend', 'value': 'hide_legend'}],
+					values=[],
+					labelStyle={'display': 'inline-block'},
+					id='hide-map-legend',
+				)
 			], style={'display':'inline-block'}),
 
 		], style={'margin':20} ),
@@ -127,7 +136,8 @@ app.layout = html.Div(children=[
 	html.Div([
 		dcc.Checklist(
 		    options=[{'label': 'Log scale', 'value': 'log'},
-					{'label': 'Hide legend', 'value': 'hide_legend'}],
+					{'label': 'Hide legend', 'value': 'hide_legend'},
+					{'label': 'Show absolute deaths per county', 'value': 'show_absolute_deaths'}],
 			values=[],
 			labelStyle={'display': 'inline-block'},
 			id='log-scale'
@@ -153,9 +163,10 @@ app.css.append_css({'external_url': 'https://codepen.io/plotly/pen/EQZeaW.css'})
 		Output('county-choropleth', 'figure'),
 		[Input('years-slider', 'value'),
 		Input('opacity-slider', 'value'),
-		Input('colorscale-picker', 'colorscale')],
+		Input('colorscale-picker', 'colorscale'),
+		Input('hide-map-legend', 'values')],
 		[State('county-choropleth', 'figure')])
-def display_map(year, opacity, colorscale, figure):
+def display_map(year, opacity, colorscale, map_checklist, figure):
 	cm = dict(zip(BINS, colorscale))
 
 	data = [dict(
@@ -191,6 +202,9 @@ def display_map(year, opacity, colorscale, figure):
 				bgcolor = '#EFEFEE'
 			)
 		)
+
+	if 'hide_legend' in map_checklist:
+		annotations = []
 
 	if 'layout' in figure:
 		lat = figure['layout']['mapbox']['center']['lat']
@@ -255,7 +269,24 @@ def display_selected_data(selectedData, checklist_values, year):
 	dff = df_full_data[df_full_data['County Code'].isin(fips)]
 	dff = dff.sort_values('Year')
 	dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].str.strip('(Unreliable)')
-	print('DFF', '\n', dff.head()['Age Adjusted Rate'])
+
+	if 'show_absolute_deaths' in checklist_values:
+		dff = dff[dff.Year == year]
+		dff['Deaths'] = pd.to_numeric(dff.Deaths, errors='coerce')
+		deaths_by_fips = dff.groupby('County')['Deaths'].sum()
+		deaths_by_fips = deaths_by_fips.sort_values()
+		fig = deaths_by_fips.iplot(
+			kind='bar',
+			y='Deaths',
+			title='Absolute deaths per county, year <b>{0}</b>'.format(year),
+			asFigure=True)
+		fig['layout']['margin']['b'] = 300
+		fig['data'][0]['text'] = deaths_by_fips.values.tolist(),
+		# TODO: Why doesn't the text show up over the bars?
+		fig['data'][0]['textposition'] = 'outside',
+		if 'log' in checklist_values:
+			fig['layout']['yaxis']['type'] = 'log'
+		return fig
 
 	fig = dff.iplot(
 		kind = 'area',
