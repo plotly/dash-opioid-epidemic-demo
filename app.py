@@ -320,7 +320,7 @@ def display_selected_data(selectedData, checklist_values, year):
 	fig['layout']['yaxis']['title'] = 'Age-adjusted death rate per county per year'
 	fig['layout']['xaxis']['title'] = ''
 	fig['layout']['yaxis']['fixedrange'] = True
-	fig['layout']['xaxis']['fixedrange'] = True
+	fig['layout']['xaxis']['fixedrange'] = False
 	fig['layout']['margin'] = dict(t=50, r=150, b=20, l=80)
 	if 'log' in checklist_values:
 		fig['layout']['yaxis']['type'] = 'log'
