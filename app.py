@@ -137,7 +137,8 @@ app.layout = html.Div(children=[
 		dcc.Checklist(
 		    options=[{'label': 'Log scale', 'value': 'log'},
 					{'label': 'Hide legend', 'value': 'hide_legend'},
-					{'label': 'Show absolute deaths per county', 'value': 'show_absolute_deaths'}],
+					{'label': 'Absolute deaths per county', 'value': 'show_absolute_deaths'},
+					{'label': 'For 1999-2016', 'value': 'all_time'}],
 			values=[],
 			labelStyle={'display': 'inline-block'},
 			id='log-scale'
@@ -255,7 +256,7 @@ def display_selected_data(selectedData, checklist_values, year):
 		return dict(
 			data = [dict(x=0, y=0)],
 			layout = dict(
-				title='Drag-select on the map',
+				title='Click-drag on the map to select counties',
 				paper_bgcolor = '#F4F4F8',
 				plot_bgcolor = '#F4F4F8'
 			)
@@ -269,16 +270,19 @@ def display_selected_data(selectedData, checklist_values, year):
 	dff = df_full_data[df_full_data['County Code'].isin(fips)]
 	dff = dff.sort_values('Year')
 	dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].str.strip('(Unreliable)')
-
 	if 'show_absolute_deaths' in checklist_values:
-		dff = dff[dff.Year == year]
+		title = 'Absolute deaths per county, <b>1999-2016</b>'
+		if 'all_time' not in checklist_values:
+			dff = dff[dff.Year == year]
+			title='Absolute deaths per county, <b>{0}</b>'.format(year)
 		dff['Deaths'] = pd.to_numeric(dff.Deaths, errors='coerce')
 		deaths_by_fips = dff.groupby('County')['Deaths'].sum()
 		deaths_by_fips = deaths_by_fips.sort_values()
+		deaths_by_fips = deaths_by_fips[deaths_by_fips > 0]
 		fig = deaths_by_fips.iplot(
 			kind='bar',
 			y='Deaths',
-			title='Absolute deaths per county, year <b>{0}</b>'.format(year),
+			title=title,
 			asFigure=True)
 		fig['layout']['margin']['b'] = 300
 		fig['data'][0]['text'] = deaths_by_fips.values.tolist(),
