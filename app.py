@@ -69,7 +69,7 @@ app.layout = html.Div(children=[
 
 	html.P('Map transparency:',
 		style={
-			'display':'inline-block', 
+			'display':'inline-block',
 			'verticalAlign': 'top',
 			'marginRight': '10px'
 		}
@@ -241,12 +241,14 @@ def display_selected_data(selectedData):
 		y = 'Age Adjusted Rate',
 		text = 'County',
 		categories = 'County',
+		colors = ["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e",\
+					"#e6ab02","#a6761d","#666666","#1b9e77"],
 		asFigure=True)
 
 	for i, trace in enumerate(fig['data']):
 		trace['mode'] = 'lines+markers'
-		trace['marker']['size'] = 2
-		trace['marker']['line']['width'] = 0.5
+		trace['marker']['size'] = 4
+		trace['marker']['line']['width'] = 1
 		trace['type']='scatter'
 		if 'textformat' in fig['data'][i]:
 			del fig['data'][i]['textformat']
