@@ -7,6 +7,7 @@ import dash_colorscales
 import pandas as pd
 import cufflinks as cf
 import numpy as np
+import re
 
 app = dash.Dash(__name__)
 server = app.server
@@ -98,6 +99,12 @@ app.layout = html.Div(children=[
 
 		], style={'margin':20} ),
 
+		html.P('Heatmap of age adjusted mortality rates \
+			from poisonings in year {0}'.format(min(YEARS)),
+			id = 'heatmap-title',
+			style = {'fontWeight':600}
+		),
+
 		dcc.Graph(
 			id = 'county-choropleth',
 			figure = dict(
@@ -137,11 +144,21 @@ app.layout = html.Div(children=[
 		dcc.Checklist(
 		    options=[{'label': 'Log scale', 'value': 'log'},
 					{'label': 'Hide legend', 'value': 'hide_legend'},
-					{'label': 'Absolute deaths per county', 'value': 'show_absolute_deaths'},
-					{'label': 'For 1999-2016', 'value': 'all_time'}],
+					{'label': 'Include values flagged "Unreliable"', 'value': 'include_unreliable'}],
 			values=[],
 			labelStyle={'display': 'inline-block'},
-			id='log-scale'
+			id='log-scale',
+			style={'position': 'absolute', 'right': 80, 'top': 10}
+		),
+		html.Br(),
+		html.P('Select chart:', style={'display': 'inline-block'}),
+		dcc.Dropdown(
+		    options=[{'label': 'Histogram of total number of deaths (single year)', 'value': 'show_absolute_deaths_single_year'},
+					{'label': 'Histogram of total number of deaths (1999-2016)', 'value': 'absolute_deaths_all_time'},
+					{'label': 'Age-adjusted death rate (single year)', 'value': 'show_death_rate_single_year'},
+					{'label': 'Trends in age-adjusted death rate (1999-2016)', 'value': 'death_rate_all_time'}],
+			value='show_death_rate_single_year',
+			id='chart-dropdown'
 		),
 		dcc.Graph(
 			id = 'selected-data',
@@ -175,6 +192,7 @@ def display_map(year, opacity, colorscale, map_checklist, figure):
 		lon = df_lat_lon['Longitude'],
 		text = df_lat_lon['Hover'],
 		type = 'scattermapbox',
+		hoverinfo = 'text',
 		#selected = dict(marker = dict(opacity=1)),
 		#unselected = dict(marker = dict(opacity = 0)),
 		marker = dict(size=5, color='white', opacity=0)
@@ -245,11 +263,20 @@ def display_map(year, opacity, colorscale, map_checklist, figure):
 	return fig
 
 @app.callback(
+	Output('heatmap-title', 'children'),
+	[Input('years-slider','value')])
+def update_map_title(year):
+	return 'Heatmap of age adjusted mortality rates \
+				from poisonings in year {0}'.format(year)
+
+@app.callback(
 	Output('selected-data', 'figure'),
 	[Input('county-choropleth', 'selectedData'),
 	Input('log-scale', 'values'),
+	Input('chart-dropdown', 'value'),
 	Input('years-slider', 'value')])
-def display_selected_data(selectedData, checklist_values, year):
+def display_selected_data(selectedData, checklist_values, chart_dropdown, year):
+	print(chart_dropdown)
 	print('FIRE SELECTION')
 	if selectedData is None:
 		print('SelectedData is None')
@@ -269,23 +296,36 @@ def display_selected_data(selectedData, checklist_values, year):
 	print('FIPS', '\n', fips)
 	dff = df_full_data[df_full_data['County Code'].isin(fips)]
 	dff = dff.sort_values('Year')
-	dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].str.strip('(Unreliable)')
-	if 'show_absolute_deaths' in checklist_values:
+
+	if 'include_unreliable' in checklist_values:
+		dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].str.strip('(Unreliable)')
+	else:
+		regex_pat = re.compile(r'Unreliable', flags=re.IGNORECASE)
+		dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].replace(regex_pat, 0)
+
+	if chart_dropdown != 'death_rate_all_time':
 		title = 'Absolute deaths per county, <b>1999-2016</b>'
-		if 'all_time' not in checklist_values:
+		AGGREGATE_BY = 'Deaths'
+		if 'show_absolute_deaths_single_year' == chart_dropdown:
 			dff = dff[dff.Year == year]
 			title='Absolute deaths per county, <b>{0}</b>'.format(year)
-		dff['Deaths'] = pd.to_numeric(dff.Deaths, errors='coerce')
-		deaths_by_fips = dff.groupby('County')['Deaths'].sum()
-		deaths_by_fips = deaths_by_fips.sort_values()
-		deaths_by_fips = deaths_by_fips[deaths_by_fips > 0]
-		fig = deaths_by_fips.iplot(
+		elif 'show_death_rate_single_year' == chart_dropdown:
+			dff = dff[dff.Year == year]
+			title='Age-adjusted death rate per county, <b>{0}</b>'.format(year)
+			AGGREGATE_BY = 'Age Adjusted Rate'
+
+		dff[AGGREGATE_BY] = pd.to_numeric(dff[AGGREGATE_BY], errors='coerce')
+		deaths_or_rate_by_fips = dff.groupby('County')[AGGREGATE_BY].sum()
+		deaths_or_rate_by_fips = deaths_or_rate_by_fips.sort_values()
+		# Only look at non-zero rows:
+		deaths_or_rate_by_fips = deaths_or_rate_by_fips[deaths_or_rate_by_fips > 0]
+		fig = deaths_or_rate_by_fips.iplot(
 			kind='bar',
-			y='Deaths',
+			y=AGGREGATE_BY,
 			title=title,
 			asFigure=True)
 		fig['layout']['margin']['b'] = 300
-		fig['data'][0]['text'] = deaths_by_fips.values.tolist(),
+		fig['data'][0]['text'] = deaths_or_rate_by_fips.values.tolist(),
 		# TODO: Why doesn't the text show up over the bars?
 		fig['data'][0]['textposition'] = 'outside',
 		if 'log' in checklist_values:
@@ -317,6 +357,7 @@ def display_selected_data(selectedData, checklist_values, year):
 	# Only show first 500 lines
 	fig['data'] = fig['data'][0:500]
 
+	# See plot.ly/python/reference
 	fig['layout']['yaxis']['title'] = 'Age-adjusted death rate per county per year'
 	fig['layout']['xaxis']['title'] = ''
 	fig['layout']['yaxis']['fixedrange'] = True
