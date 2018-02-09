@@ -44,89 +44,107 @@ mapbox_access_token = "pk.eyJ1IjoiamFja3AiLCJhIjoidGpzN0lXVSJ9.7YK6eRwUNFwd3ODZf
 app.layout = html.Div(children=[
 
 	html.Div([
-		html.H2(children='Age-Adjusted Rate of Poison-Induced Deaths'),
-		html.P('Drag the slider to change the year. Click-drag on the map to select a group of counties'),
-	]),
+		html.Div([
+			html.Div([
+				html.H4(children='Rate of US Poison-Induced Deaths'),
+				html.P('Drag the slider to change the year:'),
+			]),
 
-	html.Div([
-		dcc.Slider(
-			id='years-slider',
-			min=min(YEARS),
-			max=max(YEARS),
-			value=min(YEARS),
-			marks={str(year): str(year) for year in YEARS},
-		),
-	], style={'width':800, 'margin':25}),
+			html.Div([
+				dcc.Slider(
+					id='years-slider',
+					min=min(YEARS),
+					max=max(YEARS),
+					value=min(YEARS),
+					marks={str(year): str(year) for year in YEARS},
+				),
+			], style={'width':400, 'margin':25}),
 
-	html.Div([
-		dash_colorscales.DashColorscales(
-			id='colorscale-picker',
-			colorscale=DEFAULT_COLORSCALE,
-			nSwatches=16,
-			fixSwatches=True
-		),
-	], style={'display':'inline-block'}),
+			html.Br(),
 
-	html.P('Map transparency:',
-		style={
-			'display':'inline-block',
-			'verticalAlign': 'top',
-			'marginRight': '10px'
-		}
-	),
-
-	html.Div([
-		dcc.Slider(
-			id='opacity-slider',
-			min=0, max=1, value=DEFAULT_OPACITY, step=0.1,
-			marks={tick: str(tick)[0:3] for tick in np.linspace(0,1,11)},
-		),
-	], style={'width':400, 'display':'inline-block', 'marginBottom': 10}),
-
-	dcc.Graph(
-		id = 'county-choropleth',
-		figure = dict(
-			data=dict(
-				lat = df_lat_lon['Latitude '],
-				lon = df_lat_lon['Longitude'],
-				text = df_lat_lon['Hover'],
-				type = 'scattermapbox'
+			html.P('Map transparency:',
+				style={
+					'display':'inline-block',
+					'verticalAlign': 'top',
+					'marginRight': '10px'
+				}
 			),
-			layout = dict(
-				mapbox = dict(
-					layers = [],
-					accesstoken = mapbox_access_token,
-					style = 'light',
-					center=dict(
-						lat=38.72490,
-						lon=-95.61446,
-					),
-					pitch=0,
-					zoom=3.2
+
+			html.Div([
+				dcc.Slider(
+					id='opacity-slider',
+					min=0, max=1, value=DEFAULT_OPACITY, step=0.1,
+					marks={tick: str(tick)[0:3] for tick in np.linspace(0,1,11)},
+				),
+			], style={'width':300, 'display':'inline-block', 'marginBottom':10}),
+
+			html.Div([
+				dash_colorscales.DashColorscales(
+					id='colorscale-picker',
+					colorscale=DEFAULT_COLORSCALE,
+					nSwatches=16,
+					fixSwatches=True
+				),
+			], style={'display':'inline-block'}),
+
+		], style={'margin':20} ),
+
+		dcc.Graph(
+			id = 'county-choropleth',
+			figure = dict(
+				data=dict(
+					lat = df_lat_lon['Latitude '],
+					lon = df_lat_lon['Longitude'],
+					text = df_lat_lon['Hover'],
+					type = 'scattermapbox'
+				),
+				layout = dict(
+					mapbox = dict(
+						layers = [],
+						accesstoken = mapbox_access_token,
+						style = 'light',
+						center=dict(
+							lat=38.72490,
+							lon=-95.61446,
+						),
+						pitch=0,
+						zoom=2.5
+					)
 				)
 			)
-		)
-	),
-
-	dcc.Graph(
-		id = 'selected-data',
-		figure = dict(
-			data = [dict(x=0, y=0)],
-			layout = dict(
-				paper_bgcolor = '#F4F4F8',
-				plot_bgcolor = '#F4F4F8'
-			)
 		),
-		# animate = True
-	),
+
+		html.Div([
+			html.P('† Deaths are classified using the International Classification of Diseases, \
+				Tenth Revision (ICD–10). Drug-poisoning deaths are defined as having ICD–10 underlying \
+				cause-of-death codes X40–X44 (unintentional), X60–X64 (suicide), X85 (homicide), or Y10–Y14 \
+				(undetermined intent).'
+			)
+		], style={'margin':20})
+
+	], className='six columns', style={'margin':0}),
 
 	html.Div([
-		html.P('† Deaths are classified using the International Classification of Diseases, \
-			Tenth Revision (ICD–10). Drug-poisoning deaths are defined as having ICD–10 underlying \
-			cause-of-death codes X40–X44 (unintentional), X60–X64 (suicide), X85 (homicide), or Y10–Y14 \
-			(undetermined intent).'
+		dcc.Checklist(
+		    options=[{'label': 'Log scale', 'value': 'log'},
+					{'label': 'Hide legend', 'value': 'hide_legend'}],
+			values=[],
+			labelStyle={'display': 'inline-block'},
+			id='log-scale'
+		),
+		dcc.Graph(
+			id = 'selected-data',
+			figure = dict(
+				data = [dict(x=0, y=0)],
+				layout = dict(
+					paper_bgcolor = '#F4F4F8',
+					plot_bgcolor = '#F4F4F8',
+					height = 700
+				)
+			),
+			# animate = True
 		)
-	])
+	], className='six columns', style={'margin':0}),
 ])
 
 app.css.append_css({'external_url': 'https://codepen.io/plotly/pen/EQZeaW.css'})
@@ -169,7 +187,8 @@ def display_map(year, opacity, colorscale, figure):
 				ax = -60,
 				ay = 0,
 				arrowwidth = 5,
-				arrowhead = 0
+				arrowhead = 0,
+				bgcolor = '#EFEFEE'
 			)
 		)
 
@@ -180,7 +199,7 @@ def display_map(year, opacity, colorscale, figure):
 	else:
 		lat = 38.72490,
 		lon = -95.61446,
-		zoom = 3.2
+		zoom = 2.5
 
 	layout = dict(
 		mapbox = dict(
@@ -212,8 +231,10 @@ def display_map(year, opacity, colorscale, figure):
 
 @app.callback(
 	Output('selected-data', 'figure'),
-	[Input('county-choropleth', 'selectedData')])
-def display_selected_data(selectedData):
+	[Input('county-choropleth', 'selectedData'),
+	Input('log-scale', 'values'),
+	Input('years-slider', 'value')])
+def display_selected_data(selectedData, checklist_values, year):
 	print('FIRE SELECTION')
 	if selectedData is None:
 		print('SelectedData is None')
@@ -235,6 +256,7 @@ def display_selected_data(selectedData):
 	dff = dff.sort_values('Year')
 	dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].str.strip('(Unreliable)')
 	print('DFF', '\n', dff.head()['Age Adjusted Rate'])
+
 	fig = dff.iplot(
 		kind = 'area',
 		x = 'Year',
@@ -243,6 +265,7 @@ def display_selected_data(selectedData):
 		categories = 'County',
 		colors = ["#1b9e77","#d95f02","#7570b3","#e7298a","#66a61e",\
 					"#e6ab02","#a6761d","#666666","#1b9e77"],
+		vline=[year],
 		asFigure=True)
 
 	for i, trace in enumerate(fig['data']):
@@ -260,13 +283,19 @@ def display_selected_data(selectedData):
 	fig['data'] = fig['data'][0:500]
 
 	fig['layout']['yaxis']['title'] = 'Age-adjusted death rate per county per year'
-	fig['layout']['xaxis']['title'] = 'Year'
+	fig['layout']['xaxis']['title'] = ''
 	fig['layout']['yaxis']['fixedrange'] = True
 	fig['layout']['xaxis']['fixedrange'] = True
-	fig['layout']['yaxis']
-	fig['layout']['margin'] = dict(t=50, r=150, b=40, l=80)
+	fig['layout']['margin'] = dict(t=50, r=150, b=20, l=80)
+	if 'log' in checklist_values:
+		fig['layout']['yaxis']['type'] = 'log'
+	if 'hide_legend' in checklist_values:
+		fig['layout']['showlegend'] = False
+		fig['layout']['margin']['r'] = 10
 	fig['layout']['hovermode'] = 'closest'
 	fig['layout']['title'] = '<b>{0}</b> counties selected'.format(len(fips))
+	fig['layout']['legend'] = dict(orientation='v')
+	fig['layout']['height'] = 800
 
 	if len(fips) > 500:
 		fig['layout']['title'] = fig['layout']['title'] + '<br>(only 1st 500 shown)'
