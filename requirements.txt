@@ -7,8 +7,12 @@ cligj==0.4.0
 colorlover==0.2.1
 cufflinks==0.12.1
 cycler==0.10.0
-dash==0.36.0
+dash==0.42.0
 dash-colorscales==0.0.4
+dash-core-components==0.47.0
+dash-html-components==0.16.0
+dash-renderer==0.23.0
+dash-table==3.6.0
 decorator==4.2.1
 descartes==1.1.0
 feather-format==0.4.0
