@@ -19,20 +19,18 @@ df_full_data = pd.read_csv('age_adjusted_death_rate_no_quotes.csv')
 df_full_data['County Code'] = df_full_data['County Code'].apply(lambda x: str(x).zfill(5))
 df_full_data['County'] = df_full_data['Unnamed: 0'] + ", " + df_full_data.County.map(str)
 
-YEARS = [2003, 2004, 2005, 2006, 2007, \
+YEARS = [2003, 2004, 2005, 2006, 2007,
          2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015]
 
-BINS = ['0-2', '2.1-4', '4.1-6', '6.1-8', '8.1-10', '10.1-12', '12.1-14', \
-        '14.1-16', '16.1-18', '18.1-20', '20.1-22', '22.1-24', '24.1-26', \
+BINS = ['0-2', '2.1-4', '4.1-6', '6.1-8', '8.1-10', '10.1-12', '12.1-14',
+        '14.1-16', '16.1-18', '18.1-20', '20.1-22', '22.1-24', '24.1-26',
         '26.1-28', '28.1-30', '>30']
 
-DEFAULT_COLORSCALE = ["#2a4858", "#265465", "#1e6172", "#106e7c", "#007b84", \
-                      "#00898a", "#00968e", "#19a390", "#31b08f", "#4abd8c", "#64c988", \
+DEFAULT_COLORSCALE = ["#2a4858", "#265465", "#1e6172", "#106e7c", "#007b84",
+                      "#00898a", "#00968e", "#19a390", "#31b08f", "#4abd8c", "#64c988",
                       "#80d482", "#9cdf7c", "#bae976", "#d9f271", "#fafa6e"]
 
 DEFAULT_OPACITY = 0.8
-
-# DEFAULT_COLORSCALE = reversed(DEFAULT_COLORSCALE)
 
 mapbox_access_token = "pk.eyJ1IjoiamFja3AiLCJhIjoidGpzN0lXVSJ9.7YK6eRwUNFwd3ODZff6JvA"
 
@@ -171,7 +169,6 @@ app.layout = html.Div(children=[
                     height=700
                 )
             ),
-            # animate = True
         )
     ], className='six columns', style={'margin': 0}),
 ])
@@ -340,7 +337,7 @@ def display_selected_data(selectedData, checklist_values, chart_dropdown, year):
         y='Age Adjusted Rate',
         text='County',
         categories='County',
-        colors=["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", \
+        colors=["#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e",
                 "#e6ab02", "#a6761d", "#666666", "#1b9e77"],
         vline=[year],
         asFigure=True)
@@ -350,11 +347,8 @@ def display_selected_data(selectedData, checklist_values, chart_dropdown, year):
         trace['marker']['size'] = 4
         trace['marker']['line']['width'] = 1
         trace['type'] = 'scatter'
-        if 'textformat' in fig['data'][i]:
-            del fig['data'][i]['textformat']
-        if 'textfont' in fig['data'][i]:
-            del fig['data'][i]['textfont']
-        fig['data'][i] = trace
+        for prop in trace:
+            fig['data'][i][prop] = trace[prop]
 
     # Only show first 500 lines
     fig['data'] = fig['data'][0:500]

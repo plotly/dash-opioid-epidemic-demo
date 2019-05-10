@@ -420,3 +420,7 @@ body {
 div, svg {
   user-select: none !important;
 }
+
+._dash-undo-redo{
+    display: none;
+}
