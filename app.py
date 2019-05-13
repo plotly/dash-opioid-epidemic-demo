@@ -40,92 +40,96 @@ mapbox_access_token = "pk.eyJ1IjoiamFja3AiLCJhIjoidGpzN0lXVSJ9.7YK6eRwUNFwd3ODZf
 ~~~~~~~~~~~~~~~~
 '''
 
-app.layout = html.Div(children=[
-
-    html.Div([
-        html.Div([
-            html.Div([
-                html.H4(children='Rate of US Poison-Induced Deaths'),
-            ]),
-            html.Div(
-                id='',
-                children=[
-                    html.P('Drag the slider to change the year:'),
-                    dcc.Slider(
-                        id='years-slider',
-                        min=min(YEARS),
-                        max=max(YEARS),
-                        value=min(YEARS),
-                        marks={str(year): str(year) for year in YEARS},
-                    ),
-                ], style={'width': 400, 'background-color': '#252e3f'}),
-        ],
-    ),
-
-        html.P('Heatmap of age adjusted mortality rates \
-			from poisonings in year {0}'.format(min(YEARS)),
-               id='heatmap-title',
-               style={'fontWeight': 600}
-               ),
-
-        dcc.Graph(
-            id='county-choropleth',
-            figure=dict(
-                data=[dict(
-                    lat=df_lat_lon['Latitude '],
-                    lon=df_lat_lon['Longitude'],
-                    text=df_lat_lon['Hover'],
-                    type='scattermapbox'
-                )],
-                layout=dict(
-                    mapbox=dict(
-                        layers=[],
-                        accesstoken=mapbox_access_token,
-                        style='light',
-                        center=dict(
-                            lat=38.72490,
-                            lon=-95.61446,
+app.layout = html.Div(
+    id='root',
+    children=[
+        html.H4(children='Rate of US Poison-Induced Deaths'),
+        html.P(id='description', children='† Deaths are classified using the International Classification of Diseases, \
+                            Tenth Revision (ICD–10). Drug-poisoning deaths are defined as having ICD–10 underlying \
+                            cause-of-death codes X40–X44 (unintentional), X60–X64 (suicide), X85 (homicide), or Y10–Y14 \
+                            (undetermined intent).'),
+        html.Div(
+            id='app-container',
+            children=[
+                html.Div(
+                    className='seven columns',
+                    children=[
+                        html.Div(
+                            id='slider-container',
+                            children=[
+                                html.P('Drag the slider to change the year:'),
+                                dcc.Slider(
+                                    id='years-slider',
+                                    min=min(YEARS),
+                                    max=max(YEARS),
+                                    value=min(YEARS),
+                                    marks={str(year): str(year) for year in YEARS},
+                                ),
+                            ],
                         ),
-                        pitch=0,
-                        zoom=2.5
+                        html.Div(
+                            id='graph-container',
+                            children=[
+                                html.P('Heatmap of age adjusted mortality rates \
+                            from poisonings in year {0}'.format(min(YEARS)),
+                                       id='heatmap-title',
+                                       ),
+
+                                dcc.Graph(
+                                    id='county-choropleth',
+                                    figure=dict(
+                                        data=[dict(
+                                            lat=df_lat_lon['Latitude '],
+                                            lon=df_lat_lon['Longitude'],
+                                            text=df_lat_lon['Hover'],
+                                            type='scattermapbox'
+                                        )],
+                                        layout=dict(
+                                            mapbox=dict(
+                                                layers=[],
+                                                accesstoken=mapbox_access_token,
+                                                style='light',
+                                                center=dict(
+                                                    lat=38.72490,
+                                                    lon=-95.61446,
+                                                ),
+                                                pitch=0,
+                                                zoom=2.5
+                                            )
+                                        )
+                                    )
+                                ),
+                            ]
+                        ),
+                    ]),
+                html.Div([
+                    dcc.Dropdown(
+                        options=[{'label': 'Histogram of total number of deaths (single year)',
+                                  'value': 'show_absolute_deaths_single_year'},
+                                 {'label': 'Histogram of total number of deaths (1999-2016)',
+                                  'value': 'absolute_deaths_all_time'},
+                                 {'label': 'Age-adjusted death rate (single year)',
+                                  'value': 'show_death_rate_single_year'},
+                                 {'label': 'Trends in age-adjusted death rate (1999-2016)',
+                                  'value': 'death_rate_all_time'}],
+                        value='show_death_rate_single_year',
+                        id='chart-dropdown'
+                    ),
+                    dcc.Graph(
+                        id='selected-data',
+                        figure=dict(
+                            data=[dict(x=0, y=0)],
+                            layout=dict(
+                                paper_bgcolor='#F4F4F8',
+                                plot_bgcolor='#F4F4F8',
+                                height=700
+                            )
+                        ),
                     )
-                )
-            )
-        ),
-
-        html.Div([
-            html.P('† Deaths are classified using the International Classification of Diseases, \
-				Tenth Revision (ICD–10). Drug-poisoning deaths are defined as having ICD–10 underlying \
-				cause-of-death codes X40–X44 (unintentional), X60–X64 (suicide), X85 (homicide), or Y10–Y14 \
-				(undetermined intent).'
-                   )
-        ], style={'margin': 20})
-
-    ], className='six columns', style={'margin': 0}),
-
-    html.Div([
-        dcc.Dropdown(
-            options=[{'label': 'Histogram of total number of deaths (single year)',
-                      'value': 'show_absolute_deaths_single_year'},
-                     {'label': 'Histogram of total number of deaths (1999-2016)', 'value': 'absolute_deaths_all_time'},
-                     {'label': 'Age-adjusted death rate (single year)', 'value': 'show_death_rate_single_year'},
-                     {'label': 'Trends in age-adjusted death rate (1999-2016)', 'value': 'death_rate_all_time'}],
-            value='show_death_rate_single_year',
-            id='chart-dropdown'
-        ),
-        dcc.Graph(
-            id='selected-data',
-            figure=dict(
-                data=[dict(x=0, y=0)],
-                layout=dict(
-                    paper_bgcolor='#F4F4F8',
-                    plot_bgcolor='#F4F4F8',
-                    height=700
-                )
-            ),
-        )
-    ], className='six columns', style={'margin': 0}),
-])
+                ], className='five columns', style={'margin': 0}),
+            ])
+    ]
+)
 
 
 @app.callback(
