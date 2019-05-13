@@ -46,56 +46,21 @@ app.layout = html.Div(children=[
         html.Div([
             html.Div([
                 html.H4(children='Rate of US Poison-Induced Deaths'),
-                html.P('Drag the slider to change the year:'),
             ]),
-
-            html.Div([
-                dcc.Slider(
-                    id='years-slider',
-                    min=min(YEARS),
-                    max=max(YEARS),
-                    value=min(YEARS),
-                    marks={str(year): str(year) for year in YEARS},
-                ),
-            ], style={'width': 400, 'margin': 25}),
-
-            html.Br(),
-
-            html.P('Map transparency:',
-                   style={
-                       'display': 'inline-block',
-                       'verticalAlign': 'top',
-                       'marginRight': '10px'
-                   }
-                   ),
-
-            html.Div([
-                dcc.Slider(
-                    id='opacity-slider',
-                    min=0, max=1, value=DEFAULT_OPACITY, step=0.1,
-                    marks={tick: str(tick)[0:3] for tick in np.linspace(0, 1, 11)},
-                ),
-            ], style={'width': 300, 'display': 'inline-block', 'marginBottom': 10}),
-
-            html.Div([
-                dash_colorscales.DashColorscales(
-                    id='colorscale-picker',
-                    colorscale=DEFAULT_COLORSCALE,
-                    nSwatches=16,
-                    fixSwatches=True
-                )
-            ], style={'display': 'inline-block'}),
-
-            html.Div([
-                dcc.Checklist(
-                    options=[{'label': 'Hide legend', 'value': 'hide_legend'}],
-                    values=[],
-                    labelStyle={'display': 'inline-block'},
-                    id='hide-map-legend',
-                )
-            ], style={'display': 'inline-block'}),
-
-        ], style={'margin': 20}),
+            html.Div(
+                id='',
+                children=[
+                    html.P('Drag the slider to change the year:'),
+                    dcc.Slider(
+                        id='years-slider',
+                        min=min(YEARS),
+                        max=max(YEARS),
+                        value=min(YEARS),
+                        marks={str(year): str(year) for year in YEARS},
+                    ),
+                ], style={'width': 400, 'background-color': '#252e3f'}),
+        ],
+    ),
 
         html.P('Heatmap of age adjusted mortality rates \
 			from poisonings in year {0}'.format(min(YEARS)),
@@ -139,17 +104,6 @@ app.layout = html.Div(children=[
     ], className='six columns', style={'margin': 0}),
 
     html.Div([
-        dcc.Checklist(
-            options=[{'label': 'Log scale', 'value': 'log'},
-                     {'label': 'Hide legend', 'value': 'hide_legend'},
-                     {'label': 'Include values flagged "Unreliable"', 'value': 'include_unreliable'}],
-            values=[],
-            labelStyle={'display': 'inline-block'},
-            id='log-scale',
-            style={'position': 'absolute', 'right': 80, 'top': 10}
-        ),
-        # html.Br(),
-        html.P('Select chart:', style={'display': 'inline-block'}),
         dcc.Dropdown(
             options=[{'label': 'Histogram of total number of deaths (single year)',
                       'value': 'show_absolute_deaths_single_year'},
@@ -177,12 +131,10 @@ app.layout = html.Div(children=[
 @app.callback(
     Output('county-choropleth', 'figure'),
     [Input('years-slider', 'value'),
-     Input('opacity-slider', 'value'),
-     Input('colorscale-picker', 'colorscale'),
-     Input('hide-map-legend', 'values')],
+     ],
     [State('county-choropleth', 'figure')])
-def display_map(year, opacity, colorscale, map_checklist, figure):
-    cm = dict(zip(BINS, colorscale))
+def display_map(year, figure):
+    cm = dict(zip(BINS, DEFAULT_COLORSCALE))
 
     data = [dict(
         lat=df_lat_lon['Latitude '],
@@ -190,8 +142,6 @@ def display_map(year, opacity, colorscale, map_checklist, figure):
         text=df_lat_lon['Hover'],
         type='scattermapbox',
         hoverinfo='text',
-        # selected = dict(marker = dict(opacity=1)),
-        # unselected = dict(marker = dict(opacity = 0)),
         marker=dict(size=5, color='white', opacity=0)
     )]
 
@@ -218,9 +168,6 @@ def display_map(year, opacity, colorscale, map_checklist, figure):
                 bgcolor='#EFEFEE'
             )
         )
-
-    if 'hide_legend' in map_checklist:
-        annotations = []
 
     if 'layout' in figure:
         lat = figure['layout']['mapbox']['center']['lat']
@@ -252,7 +199,7 @@ def display_map(year, opacity, colorscale, map_checklist, figure):
             source=base_url + str(year) + '/' + bin + '.geojson',
             type='fill',
             color=cm[bin],
-            opacity=opacity
+            opacity=DEFAULT_OPACITY
         )
         layout['mapbox']['layers'].append(geo_layer)
 
@@ -271,10 +218,10 @@ def update_map_title(year):
 @app.callback(
     Output('selected-data', 'figure'),
     [Input('county-choropleth', 'selectedData'),
-     Input('log-scale', 'values'),
      Input('chart-dropdown', 'value'),
-     Input('years-slider', 'value')])
-def display_selected_data(selectedData, checklist_values, chart_dropdown, year):
+     Input('years-slider', 'value')
+     ])
+def display_selected_data(selectedData, chart_dropdown, year):
     print(chart_dropdown)
     print('FIRE SELECTION')
     if selectedData is None:
@@ -296,11 +243,8 @@ def display_selected_data(selectedData, checklist_values, chart_dropdown, year):
     dff = df_full_data[df_full_data['County Code'].isin(fips)]
     dff = dff.sort_values('Year')
 
-    if 'include_unreliable' in checklist_values:
-        dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].str.strip('(Unreliable)')
-    else:
-        regex_pat = re.compile(r'Unreliable', flags=re.IGNORECASE)
-        dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].replace(regex_pat, 0)
+    regex_pat = re.compile(r'Unreliable', flags=re.IGNORECASE)
+    dff['Age Adjusted Rate'] = dff['Age Adjusted Rate'].replace(regex_pat, 0)
 
     if chart_dropdown != 'death_rate_all_time':
         title = 'Absolute deaths per county, <b>1999-2016</b>'
@@ -327,8 +271,6 @@ def display_selected_data(selectedData, checklist_values, chart_dropdown, year):
         fig['data'][0]['text'] = deaths_or_rate_by_fips.values.tolist(),
         # TODO: Why doesn't the text show up over the bars?
         fig['data'][0]['textposition'] = 'outside',
-        if 'log' in checklist_values:
-            fig['layout']['yaxis']['type'] = 'log'
         return fig
 
     fig = dff.iplot(
@@ -359,11 +301,6 @@ def display_selected_data(selectedData, checklist_values, chart_dropdown, year):
     fig['layout']['yaxis']['fixedrange'] = True
     fig['layout']['xaxis']['fixedrange'] = False
     fig['layout']['margin'] = dict(t=50, r=150, b=20, l=80)
-    if 'log' in checklist_values:
-        fig['layout']['yaxis']['type'] = 'log'
-    if 'hide_legend' in checklist_values:
-        fig['layout']['showlegend'] = False
-        fig['layout']['margin']['r'] = 10
     fig['layout']['hovermode'] = 'closest'
     fig['layout']['title'] = '<b>{0}</b> counties selected'.format(len(fips))
     fig['layout']['legend'] = dict(orientation='v')

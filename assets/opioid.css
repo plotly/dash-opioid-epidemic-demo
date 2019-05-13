@@ -1,3 +1,6 @@
+ @import url('https://fonts.googleapis.com/css?family=Open+Sans');
+  @import url('https://fonts.googleapis.com/css?family=Playfair+Display');
+
 /* Table of contents
 ––––––––––––––––––––––––––––––––––––––––––––––––––
 - Plotly.js
@@ -125,13 +128,16 @@
 html is set to 62.5% so that all the REM measurements throughout Skeleton
 are based on 10px sizing. So basically 1.5rem = 15px :) */
 html {
-  font-size: 62.5%; }
+  font-size: 62.5%;
+  background-color: #1f2630;
+}
 body {
   font-size: 1.5em; /* currently ems cause chrome bug misinterpreting rems on body element */
   line-height: 1.6;
   font-weight: 400;
   font-family: "Open Sans", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color: rgb(50, 50, 50); }
+  color: #7fafdf;
+}
 
 
 /* Typography
@@ -388,6 +394,20 @@ hr {
   clear: both; }
 
 
+/* Slider
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+.rc-slider-dot-active, .rc-slider-handle{
+  border-color: #2cfec1 !important;
+}
+
+.rc-slider-track{
+  background-color: #2cfec1 !important
+}
+
+.rc-slider-rail{
+  background-color: #1d2731 !important
+}
 /* Media Queries
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 /*
@@ -413,9 +433,6 @@ there.
 /* Larger than Desktop HD */
 @media (min-width: 1200px) {}
 
-body {
-  background: #F4F4F8 !important;
-}
 
 div, svg {
   user-select: none !important;
