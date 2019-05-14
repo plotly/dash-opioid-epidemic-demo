@@ -64,7 +64,10 @@ app.layout = html.Div(
                                     min=min(YEARS),
                                     max=max(YEARS),
                                     value=min(YEARS),
-                                    marks={str(year): str(year) for year in YEARS},
+                                    marks={str(year): {
+                                        'label': str(year),
+                                        'style': {'color': '#7fafdf'}
+                                    } for year in YEARS},
                                 ),
                             ],
                         ),
@@ -160,6 +163,8 @@ def display_map(year, figure):
         showarrow=False,
         align='right',
         text='<b>Age-adjusted death rate<br>per county per year</b>',
+        font=dict(color='#2cfec1'),
+        bgcolor='#1f2630',
         x=0.95,
         y=0.95,
     )]
@@ -176,7 +181,8 @@ def display_map(year, figure):
                 ay=0,
                 arrowwidth=5,
                 arrowhead=0,
-                bgcolor='#EFEFEE'
+                bgcolor='#1f2630',
+                font=dict(color='#2cfec1'),
             )
         )
 
@@ -335,7 +341,7 @@ def display_selected_data(selectedData, chart_dropdown, year):
     fig['layout']['autosize'] = True
     fig['layout']['paper_bgcolor'] = '#1f2630'
     fig['layout']['plot_bgcolor'] = '#1f2630'
-    fig['layout']['font'] = dict(color='#2cfec1')
+    fig['layout']['font']['color'] = '#2cfec1'
     fig['layout']['xaxis']['tickfont']['color'] = '#2cfec1'
     fig['layout']['yaxis']['tickfont']['color'] = '#2cfec1'
     fig['layout']['xaxis']['gridcolor'] = '#5b5b5b'

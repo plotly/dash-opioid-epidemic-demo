@@ -609,19 +609,13 @@ hr {
     clear: both;
 }
 
-/* Left column
-–––––––––––––––––––––––––––––––––––––––––––––––––– */
-#left-column{
-    margin-right: 1.5%;
-}
-
-
 /* Slider
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 #slider-container {
     background-color: #252e3f;
     padding: 2rem 6rem 4rem 4rem;
+    height: 6.8rem;
 }
 
 .rc-slider-dot-active, .rc-slider-handle {
@@ -636,26 +630,30 @@ hr {
     background-color: #1d2731 !important
 }
 
-#slider-container{
-    margin-bottom: 2%;
-}
-
 /* Heatmap
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 #heatmap-container{
-    margin-top: 3%;
+    margin-top: 2.5rem;
     background-color: #252e3f;
 }
 
 #heatmap-title{
     margin: 0;
-    padding: 1%
+    padding: 1rem;
 }
 
 #county-choropleth{
     margin: 0;
-    height: 60rem;
+    height: 59.5rem;
+    max-height: 59.5rem;
 }
+
+/* Left column
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+#left-column{
+    margin-right: 1.5%;
+}
+
 
 /* Graph
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -663,17 +661,17 @@ hr {
 #graph-container{
     margin: 0 0 10rem 0;
     background-color: #252e3f;
-    padding: 1% 3% 5.8% 3%;
+    padding: 5rem;
+    max-height: 80rem;
+    height: 80rem;
 }
 
 #chart-dropdown{
-    margin-bottom: 9%;
+    margin-bottom: 6.6rem;
 }
 
 #selected-data{
     height: 55rem;
-    background-color: pink;
-    /*max-height: 55rem !important;*/
 }
 
 /* Dropdown
