@@ -42,15 +42,16 @@ mapbox_style = 'mapbox://styles/yunke0123/cjvo2m87d07mk1cpdbo3lvw3j'
 app.layout = html.Div(
     id='root',
     children=[
-        html.Div(id='header',
-                 children=[
-                     html.H4(children='Rate of US Poison-Induced Deaths'),
-                     html.P(id='description', children='† Deaths are classified using the International Classification of Diseases, \
-                            Tenth Revision (ICD–10). Drug-poisoning deaths are defined as having ICD–10 underlying \
-                            cause-of-death codes X40–X44 (unintentional), X60–X64 (suicide), X85 (homicide), or Y10–Y14 \
-                            (undetermined intent).'),
-
-                 ]),
+        html.Div(
+            id='header',
+            children=[
+                html.H4(children='Rate of US Poison-Induced Deaths'),
+                html.P(id='description', children='† Deaths are classified using the International Classification of Diseases, \
+                    Tenth Revision (ICD–10). Drug-poisoning deaths are defined as having ICD–10 underlying \
+                    cause-of-death codes X40–X44 (unintentional), X60–X64 (suicide), X85 (homicide), or Y10–Y14 \
+                    (undetermined intent).'),
+            ]
+        ),
         html.Div(
             id='app-container',
             children=[
@@ -110,7 +111,9 @@ app.layout = html.Div(
                                 ),
                             ]
                         ),
-                    ]),
+                    ]
+                ),
+
                 html.Div(
                     id='graph-container',
                     children=[
@@ -141,8 +144,11 @@ app.layout = html.Div(
                                 )
                             ),
                         )
-                    ], className='five columns'),
-            ])
+                    ],
+                    className='five columns'
+                ),
+            ]
+        )
     ]
 )
 
