@@ -3,10 +3,8 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output, State
-import dash_colorscales
 import pandas as pd
 import cufflinks as cf
-import numpy as np
 import re
 
 app = dash.Dash(__name__)
@@ -26,13 +24,14 @@ BINS = ['0-2', '2.1-4', '4.1-6', '6.1-8', '8.1-10', '10.1-12', '12.1-14',
         '14.1-16', '16.1-18', '18.1-20', '20.1-22', '22.1-24', '24.1-26',
         '26.1-28', '28.1-30', '>30']
 
-DEFAULT_COLORSCALE = ["#2a4858", "#265465", "#1e6172", "#106e7c", "#007b84",
-                      "#00898a", "#00968e", "#19a390", "#31b08f", "#4abd8c", "#64c988",
-                      "#80d482", "#9cdf7c", "#bae976", "#d9f271", "#fafa6e"]
+DEFAULT_COLORSCALE = ["#c5ffed", "#a9ffe4", "#8effdb", "#60ffcc", "#51f7c2",
+                      "#47e7b4", "#40ddab", "#38cf9f", "#31c194", "#2bb489", "#25a27b",
+                      "#1e906d", "#188463", "#157658", "#11684d", "#10523e"]
 
 DEFAULT_OPACITY = 0.8
 
-mapbox_access_token = "pk.eyJ1IjoiamFja3AiLCJhIjoidGpzN0lXVSJ9.7YK6eRwUNFwd3ODZff6JvA"
+mapbox_access_token = "pk.eyJ1IjoieXVua2UwMTIzIiwiYSI6ImNqdm1xc3ZyMjByNm00Nm50MzN1YzNnYncifQ.9RhXTBzJRy1sWeL6tx1ssA"
+mapbox_style = 'mapbox://styles/yunke0123/cjvo2m87d07mk1cpdbo3lvw3j'
 
 '''
 ~~~~~~~~~~~~~~~~
@@ -57,7 +56,8 @@ app.layout = html.Div(
                         html.Div(
                             id='slider-container',
                             children=[
-                                html.P('Drag the slider to change the year:'),
+                                html.P(id='slider-text',
+                                       children='Drag the slider to change the year:'),
                                 dcc.Slider(
                                     id='years-slider',
                                     min=min(YEARS),
@@ -68,7 +68,7 @@ app.layout = html.Div(
                             ],
                         ),
                         html.Div(
-                            id='graph-container',
+                            id='map-container',
                             children=[
                                 html.P('Heatmap of age adjusted mortality rates \
                             from poisonings in year {0}'.format(min(YEARS)),
@@ -88,45 +88,48 @@ app.layout = html.Div(
                                             mapbox=dict(
                                                 layers=[],
                                                 accesstoken=mapbox_access_token,
-                                                style='light',
+                                                
+                                                style=mapbox_style,
                                                 center=dict(
                                                     lat=38.72490,
                                                     lon=-95.61446,
                                                 ),
                                                 pitch=0,
-                                                zoom=2.5
-                                            )
+                                                zoom=3
+                                            ),
                                         )
                                     )
                                 ),
                             ]
                         ),
                     ]),
-                html.Div([
-                    dcc.Dropdown(
-                        options=[{'label': 'Histogram of total number of deaths (single year)',
-                                  'value': 'show_absolute_deaths_single_year'},
-                                 {'label': 'Histogram of total number of deaths (1999-2016)',
-                                  'value': 'absolute_deaths_all_time'},
-                                 {'label': 'Age-adjusted death rate (single year)',
-                                  'value': 'show_death_rate_single_year'},
-                                 {'label': 'Trends in age-adjusted death rate (1999-2016)',
-                                  'value': 'death_rate_all_time'}],
-                        value='show_death_rate_single_year',
-                        id='chart-dropdown'
-                    ),
-                    dcc.Graph(
-                        id='selected-data',
-                        figure=dict(
-                            data=[dict(x=0, y=0)],
-                            layout=dict(
-                                paper_bgcolor='#F4F4F8',
-                                plot_bgcolor='#F4F4F8',
-                                height=700
-                            )
+                html.Div(
+                    id='graph-container',
+                    children=[
+                        dcc.Dropdown(
+                            options=[{'label': 'Histogram of total number of deaths (single year)',
+                                      'value': 'show_absolute_deaths_single_year'},
+                                     {'label': 'Histogram of total number of deaths (1999-2016)',
+                                      'value': 'absolute_deaths_all_time'},
+                                     {'label': 'Age-adjusted death rate (single year)',
+                                      'value': 'show_death_rate_single_year'},
+                                     {'label': 'Trends in age-adjusted death rate (1999-2016)',
+                                      'value': 'death_rate_all_time'}],
+                            value='show_death_rate_single_year',
+                            id='chart-dropdown'
                         ),
-                    )
-                ], className='five columns', style={'margin': 0}),
+                        dcc.Graph(
+                            id='selected-data',
+                            figure=dict(
+                                data=[dict(x=0, y=0)],
+                                layout=dict(
+                                    paper_bgcolor='#F4F4F8',
+                                    plot_bgcolor='#F4F4F8',
+                                    height=700
+                                )
+                            ),
+                        )
+                    ], className='five columns'),
             ])
     ]
 )
@@ -134,8 +137,7 @@ app.layout = html.Div(
 
 @app.callback(
     Output('county-choropleth', 'figure'),
-    [Input('years-slider', 'value'),
-     ],
+    [Input('years-slider', 'value')],
     [State('county-choropleth', 'figure')])
 def display_map(year, figure):
     cm = dict(zip(BINS, DEFAULT_COLORSCALE))
@@ -180,20 +182,21 @@ def display_map(year, figure):
     else:
         lat = 38.72490,
         lon = -95.61446,
-        zoom = 2.5
+        zoom = 3
 
     layout = dict(
         mapbox=dict(
             layers=[],
             accesstoken=mapbox_access_token,
-            style='light',
+            
+            style=mapbox_style,
             center=dict(lat=lat, lon=lon),
             zoom=zoom
         ),
         hovermode='closest',
         margin=dict(r=0, l=0, t=0, b=0),
         annotations=annotations,
-        dragmode='lasso'
+        dragmode='lasso',
     )
 
     base_url = 'https://raw.githubusercontent.com/jackparmer/mapbox-counties/master/'

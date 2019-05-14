@@ -236,7 +236,7 @@ body {
 }
 
 #root {
-    padding: 5rem 5rem 5rem !important;
+    padding: 5% !important;
     margin: 0;
 }
 
@@ -302,13 +302,19 @@ p {
 
 #heatmap-title {
     font-family: "Playfair Display", sans-serif;
-    font-size: 1.5rem;
+    font-size: 2rem;
 }
 
 #description{
     border-left: #2cfec1 solid 1rem;
     padding-left: 1rem;
     max-width: 100rem;
+    margin-bottom: 5rem;
+}
+
+#slider-text{
+    margin-bottom: 2rem !important;
+    font-size: 1.5rem;
 }
 
 /* Blockquotes
@@ -622,6 +628,27 @@ hr {
 
 .rc-slider-rail {
     background-color: #1d2731 !important
+}
+
+#slider-container{
+    margin-bottom: 2%;
+}
+
+/* Graph
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+#heatmap-title{
+    position: relative;
+    z-index: 10;
+    margin: 0 0 -5% 2%;
+}
+
+#graph-container{
+    margin: 0;
+}
+
+#county-choropleth{
+    position: relative;
+    z-index: 0
 }
 
 /* Media Queries
