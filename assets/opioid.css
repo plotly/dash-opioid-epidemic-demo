@@ -236,7 +236,7 @@ body {
 }
 
 #root {
-    padding: 5% !important;
+    padding: 5rem !important;
     margin: 0;
 }
 
@@ -705,6 +705,18 @@ hr {
 .Select--single > .Select-control .Select-value, .Select-placeholder {
     border: 1px solid #7fafdf !important;
     border-radius: 4px !important;
+}
+
+/* Placement
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+#app-container{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#header{
+    margin-left: 1.5%;
 }
 
 

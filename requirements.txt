@@ -1,5 +1,4 @@
 dash>=0.42.0
-dash-colorscales>=0.0.4
 gunicorn>=19.7.1
 numpy>=1.14.0
 pandas>=0.22.0
