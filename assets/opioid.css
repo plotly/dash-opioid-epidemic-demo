@@ -312,9 +312,9 @@ p {
     margin-bottom: 5rem;
 }
 
-#slider-text{
+#slider-text, #chart-selector{
     margin-bottom: 2rem !important;
-    font-size: 1.5rem;
+    font-size: 2rem;
 }
 
 /* Blockquotes
@@ -609,6 +609,12 @@ hr {
     clear: both;
 }
 
+/* Left column
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+#left-column{
+    margin-right: 1.5%;
+}
+
 
 /* Slider
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
@@ -634,22 +640,42 @@ hr {
     margin-bottom: 2%;
 }
 
-/* Graph
+/* Heatmap
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
-#heatmap-title{
-    position: relative;
-    z-index: 10;
-    margin: 0 0 -5% 2%;
+#heatmap-container{
+    margin-top: 3%;
+    background-color: #252e3f;
 }
 
-#graph-container{
+#heatmap-title{
     margin: 0;
+    padding: 1%
 }
 
 #county-choropleth{
-    position: relative;
-    z-index: 0
+    margin: 0;
+    height: 60rem;
 }
+
+/* Graph
+–––––––––––––––––––––––––––––––––––––––––––––––––– */
+
+#graph-container{
+    margin: 0 0 10rem 0;
+    background-color: #252e3f;
+    padding: 1% 3% 5.8% 3%;
+}
+
+#chart-dropdown{
+    margin-bottom: 9%;
+}
+
+#selected-data{
+    height: 55rem;
+    background-color: pink;
+    /*max-height: 55rem !important;*/
+}
+
 
 /* Media Queries
 –––––––––––––––––––––––––––––––––––––––––––––––––– */

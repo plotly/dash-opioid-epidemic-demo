@@ -24,8 +24,8 @@ BINS = ['0-2', '2.1-4', '4.1-6', '6.1-8', '8.1-10', '10.1-12', '12.1-14',
         '14.1-16', '16.1-18', '18.1-20', '20.1-22', '22.1-24', '24.1-26',
         '26.1-28', '28.1-30', '>30']
 
-DEFAULT_COLORSCALE = ["#c5ffed", "#a9ffe4", "#8effdb", "#60ffcc", "#51f7c2",
-                      "#47e7b4", "#40ddab", "#38cf9f", "#31c194", "#2bb489", "#25a27b",
+DEFAULT_COLORSCALE = ["#f2fffb", "#bbffeb", "#98ffe0", "#79ffd6", "#6df0c8",
+                      "#69e7c0", "#59dab2", "#45d0a5", "#31c194", "#2bb489", "#25a27b",
                       "#1e906d", "#188463", "#157658", "#11684d", "#10523e"]
 
 DEFAULT_OPACITY = 0.8
@@ -51,6 +51,7 @@ app.layout = html.Div(
             id='app-container',
             children=[
                 html.Div(
+                    id='left-column',
                     className='seven columns',
                     children=[
                         html.Div(
@@ -68,7 +69,7 @@ app.layout = html.Div(
                             ],
                         ),
                         html.Div(
-                            id='map-container',
+                            id='heatmap-container',
                             children=[
                                 html.P('Heatmap of age adjusted mortality rates \
                             from poisonings in year {0}'.format(min(YEARS)),
@@ -88,15 +89,15 @@ app.layout = html.Div(
                                             mapbox=dict(
                                                 layers=[],
                                                 accesstoken=mapbox_access_token,
-                                                
                                                 style=mapbox_style,
                                                 center=dict(
                                                     lat=38.72490,
                                                     lon=-95.61446,
                                                 ),
                                                 pitch=0,
-                                                zoom=3
+                                                zoom=3.5
                                             ),
+                                            autosize=True
                                         )
                                     )
                                 ),
@@ -106,6 +107,10 @@ app.layout = html.Div(
                 html.Div(
                     id='graph-container',
                     children=[
+                        html.P(
+                            id='chart-selector',
+                            children='Select chart:'
+                        ),
                         dcc.Dropdown(
                             options=[{'label': 'Histogram of total number of deaths (single year)',
                                       'value': 'show_absolute_deaths_single_year'},
@@ -125,7 +130,7 @@ app.layout = html.Div(
                                 layout=dict(
                                     paper_bgcolor='#F4F4F8',
                                     plot_bgcolor='#F4F4F8',
-                                    height=700
+                                    autofill=True,
                                 )
                             ),
                         )
@@ -182,13 +187,12 @@ def display_map(year, figure):
     else:
         lat = 38.72490,
         lon = -95.61446,
-        zoom = 3
+        zoom = 3.5
 
     layout = dict(
         mapbox=dict(
             layers=[],
             accesstoken=mapbox_access_token,
-            
             style=mapbox_style,
             center=dict(lat=lat, lon=lon),
             zoom=zoom
@@ -206,7 +210,11 @@ def display_map(year, figure):
             source=base_url + str(year) + '/' + bin + '.geojson',
             type='fill',
             color=cm[bin],
-            opacity=DEFAULT_OPACITY
+            opacity=DEFAULT_OPACITY,
+            # CHANGE THIS
+            fill=dict(
+                outlinecolor="#afafaf"
+            )
         )
         layout['mapbox']['layers'].append(geo_layer)
 
@@ -237,8 +245,11 @@ def display_selected_data(selectedData, chart_dropdown, year):
             data=[dict(x=0, y=0)],
             layout=dict(
                 title='Click-drag on the map to select counties',
-                paper_bgcolor='#F4F4F8',
-                plot_bgcolor='#F4F4F8'
+                paper_bgcolor='#1f2630',
+                plot_bgcolor='#1f2630',
+                font=dict(
+                    color='#2cfec1'
+                ),
             )
         )
     pts = selectedData['points']
@@ -274,10 +285,20 @@ def display_selected_data(selectedData, chart_dropdown, year):
             y=AGGREGATE_BY,
             title=title,
             asFigure=True)
-        fig['layout']['margin']['b'] = 300
-        fig['data'][0]['text'] = deaths_or_rate_by_fips.values.tolist(),
+        fig['data'][0]['text'] = deaths_or_rate_by_fips.values.tolist()
+        fig['data'][0]['marker']['color'] = '#2cfec1'
+        fig['data'][0]['marker']['opacity'] = 1
+        fig['data'][0]['marker']['line']['width'] = 0
         # TODO: Why doesn't the text show up over the bars?
-        fig['data'][0]['textposition'] = 'outside',
+        fig['data'][0]['textposition'] = 'outside'
+        fig['layout']['paper_bgcolor'] = '#1f2630'
+        fig['layout']['plot_bgcolor'] = '#1f2630'
+        fig['layout']['font']['color'] = '#2cfec1'
+        fig['layout']['title']['font']['color'] = '#2cfec1'
+        fig['layout']['xaxis']['tickfont']['color'] = '#2cfec1'
+        fig['layout']['yaxis']['tickfont']['color'] = '#2cfec1'
+        fig['layout']['xaxis']['gridcolor'] = '#5b5b5b'
+        fig['layout']['yaxis']['gridcolor'] = '#5b5b5b'
         return fig
 
     fig = dff.iplot(
@@ -307,14 +328,17 @@ def display_selected_data(selectedData, chart_dropdown, year):
     fig['layout']['xaxis']['title'] = ''
     fig['layout']['yaxis']['fixedrange'] = True
     fig['layout']['xaxis']['fixedrange'] = False
-    fig['layout']['margin'] = dict(t=50, r=150, b=20, l=80)
+    # fig['layout']['margin'] = dict(t=50, r=150, b=20, l=80)
     fig['layout']['hovermode'] = 'closest'
     fig['layout']['title'] = '<b>{0}</b> counties selected'.format(len(fips))
     fig['layout']['legend'] = dict(orientation='v')
-    fig['layout']['height'] = 800
+    fig['layout']['autosize'] = True
+    fig['layout']['paper_bgcolor'] = '#1f2630'
+    fig['layout']['plot_bgcolor'] = '#1f2630'
+    fig['layout']['font'] = dict(color='#2cfec1')
 
     if len(fips) > 500:
-        fig['layout']['title'] = fig['layout']['title'] + '<br>(only 1st 500 shown)'
+        fig['layout']['title'] = 'Age-adjusted death rate per county per year <br>(only 1st 500 shown)'
 
     return fig
 
