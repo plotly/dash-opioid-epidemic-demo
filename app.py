@@ -336,6 +336,10 @@ def display_selected_data(selectedData, chart_dropdown, year):
     fig['layout']['paper_bgcolor'] = '#1f2630'
     fig['layout']['plot_bgcolor'] = '#1f2630'
     fig['layout']['font'] = dict(color='#2cfec1')
+    fig['layout']['xaxis']['tickfont']['color'] = '#2cfec1'
+    fig['layout']['yaxis']['tickfont']['color'] = '#2cfec1'
+    fig['layout']['xaxis']['gridcolor'] = '#5b5b5b'
+    fig['layout']['yaxis']['gridcolor'] = '#5b5b5b'
 
     if len(fips) > 500:
         fig['layout']['title'] = 'Age-adjusted death rate per county per year <br>(only 1st 500 shown)'
