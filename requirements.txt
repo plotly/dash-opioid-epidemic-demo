@@ -32,7 +32,7 @@ MarkupSafe==1.0
 matplotlib==2.1.2
 munch==2.2.0
 nbformat==4.4.0
-numpy==1.14.0
+numpy==1.22.0
 pandas==0.22.0
 parso==0.1.1
 pexpect==4.3.1
